@@ -2,8 +2,8 @@ name: build
 
 # Desktop application for Windows, macOS and Linux.
 # A tag v1.2.3 publishes a release of that version:
-# .dmg on macOS, .AppImage and .tar.gz on Linux, .zip on Windows, each with a .sha256.
-# Copies without the version are attached so the README can link to releases/latest.
+# .dmg on macOS, .AppImage and .tar.gz on Linux, .zip on Windows.
+# The same names without the version are attached so the README can link to releases/latest.
 # The terminal command is not attached: install it with go install.
 on:
   push:
@@ -100,20 +100,6 @@ jobs:
               sh build/linux/appimage.sh build/bin/lman-desktop build/appicon.png "dist/${name}.AppImage"
               ;;
           esac
-          checksum() {
-            local f="$1" hash
-            if command -v sha256sum >/dev/null 2>&1; then
-              hash="$(sha256sum "$f" | awk '{print $1}')"
-            else
-              hash="$(shasum -a 256 "$f" | awk '{print $1}')"
-            fi
-            printf '%s  %s\n' "$hash" "$(basename "$f")" > "${f}.sha256"
-          }
-          for f in dist/*; do
-            case "$f" in *.sha256) continue ;; esac
-            [ -f "$f" ] || continue
-            checksum "$f"
-          done
       - uses: actions/upload-artifact@v6
         with:
           name: lman-${{ matrix.goos }}-${{ matrix.goarch }}
@@ -138,15 +124,12 @@ jobs:
           cd out
           ver="${GITHUB_REF_NAME#v}"
           for f in lman-*; do
-            case "$f" in *.sha256) continue ;; esac
             dest="${f/lman-${ver}-/lman-}"
             if [[ "$dest" == "$f" ]]; then
               echo "unexpected release file: $f" >&2
               exit 1
             fi
             cp -a "$f" "$dest"
-            hash="$(awk '{print $1; exit}' "${f}.sha256")"
-            printf '%s  %s\n' "$hash" "$dest" > "${dest}.sha256"
           done
           ls -l
       - uses: softprops/action-gh-release@v3

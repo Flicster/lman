@@ -25,7 +25,7 @@ Download the file for your system. These links always open the [latest release](
 
 Linux needs GTK 3 and WebKitGTK 4.1, including for the AppImage. On Ubuntu: `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`. The AppImage also needs FUSE 2: `sudo apt install libfuse2` (Ubuntu 24.04: `libfuse2t64`). Or use [`lman-linux-amd64.tar.gz`](../../releases/latest/download/lman-linux-amd64.tar.gz). Windows uses the WebView2 runtime, which the application downloads on first launch if it is missing.
 
-To check a file, compare its sha256 with the `.sha256` file beside it: `certutil -hashfile <file> SHA256` on Windows, `shasum -a 256 <file>` on macOS, `sha256sum <file>` on Linux.
+The release page shows the sha256 of each file.
 
 The application is not signed. macOS asks you to open it from the context menu the first time. Windows SmartScreen asks for **More info**, then **Run anyway**.
 
@@ -51,7 +51,7 @@ go install github.com/<owner>/lman/cmd/lman@v1.2.3
 
 Open the Lman application.
 
-The first screen is one tile per installed language. The tile size stays the same when you resize the window; the tiles reflow down to a single column. A tile shows the active version, or **not active**.
+The first screen is one tile per installed language. A tile shows the active version, or **not active**.
 
 **Detectable languages** lists every language Lman knows how to find, including ones that are not installed.
 
@@ -103,7 +103,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.0
 make app
 ```
 
-Every push and pull request runs the tests and the linter on Windows, macOS, and Linux. A tag `v1.2.3` builds the desktop application and publishes that version: a `.dmg` on macOS, an `.AppImage` and a `.tar.gz` on Linux, a `.zip` on Windows, each with a `.sha256`. The same build can be started by hand; that run is not published. The terminal command is installed with `go install`.
+Every push and pull request runs the tests and the linter on Windows, macOS, and Linux. A tag `v1.2.3` builds the desktop application and publishes that version: a `.dmg` on macOS, an `.AppImage` and a `.tar.gz` on Linux, a `.zip` on Windows. The same build can be started by hand; that run is not published. The terminal command is installed with `go install`.
 
 ## License
 
