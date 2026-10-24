@@ -14,16 +14,18 @@ A version is something like `go1.26.5` or `3.12.4`. The **active** version is th
 
 ### Desktop application
 
-Download it from the [latest release](../../releases/latest). A release is a version, such as `v1.2.3`. The file names use that version without the leading `v`.
+Download the file for your system. These links always open the [latest release](../../releases/latest). Every version, with its number in the file name, is in [Releases](../../releases).
 
 | System | File | How to open |
 | --- | --- | --- |
-| macOS, Apple Silicon | `lman-1.2.3-darwin-arm64.zip` | Unzip and open `Lman.app`. |
-| macOS, Intel | `lman-1.2.3-darwin-amd64.zip` | Unzip and open `Lman.app`. |
-| Windows | `lman-1.2.3-windows-amd64.zip` | Unzip and open `lman-desktop.exe`. |
-| Linux x86-64 | `lman-1.2.3-linux-amd64.tar.gz` | Unpack and open `lman-desktop`. |
+| macOS, Apple Silicon | [`lman-darwin-arm64.dmg`](../../releases/latest/download/lman-darwin-arm64.dmg) | Open it and drag Lman to Applications. The same application is also a [`.zip`](../../releases/latest/download/lman-darwin-arm64.zip). |
+| macOS, Intel | [`lman-darwin-amd64.dmg`](../../releases/latest/download/lman-darwin-amd64.dmg) | Open it and drag Lman to Applications. The same application is also a [`.zip`](../../releases/latest/download/lman-darwin-amd64.zip). |
+| Windows | [`lman-windows-amd64.zip`](../../releases/latest/download/lman-windows-amd64.zip) | Unzip and open `lman-desktop.exe`. |
+| Linux x86-64 | [`lman-linux-amd64.AppImage`](../../releases/latest/download/lman-linux-amd64.AppImage) | `chmod +x lman-linux-amd64.AppImage` and run it. The same program as a folder: [`lman-linux-amd64.tar.gz`](../../releases/latest/download/lman-linux-amd64.tar.gz), run `lman-desktop` inside. |
 
-Linux needs GTK 3 and WebKitGTK 4.1. On Ubuntu: `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`. Windows uses the WebView2 runtime, which the application downloads on first launch if it is missing.
+Linux needs GTK 3 and WebKitGTK 4.1, including for the AppImage. On Ubuntu: `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`. The AppImage also needs FUSE 2: `sudo apt install libfuse2` (Ubuntu 24.04: `libfuse2t64`). Or use the `.tar.gz`. Windows uses the WebView2 runtime, which the application downloads on first launch if it is missing.
+
+To check a file, compare its sha256 with the `.sha256` file beside it: `certutil -hashfile <file> SHA256` on Windows, `shasum -a 256 <file>` on macOS, `sha256sum <file>` on Linux.
 
 The application is not signed. macOS asks you to open it from the context menu the first time. Windows SmartScreen asks for **More info**, then **Run anyway**.
 
@@ -101,7 +103,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.0
 make app
 ```
 
-Every push and pull request runs the tests and the linter on Windows, macOS, and Linux. A push to `main` builds the desktop application. A tag `v1.2.3` publishes that version. The release contains the application files. The terminal command is installed with `go install`.
+Every push and pull request runs the tests and the linter on Windows, macOS, and Linux. A push to `main` builds the desktop application. A tag `v1.2.3` publishes that version: a `.dmg` on macOS, an `.AppImage` and a `.tar.gz` on Linux, a `.zip` on Windows, each with a `.sha256`. The terminal command is installed with `go install`.
 
 ## License
 

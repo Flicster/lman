@@ -1,5 +1,6 @@
 name: tests
 
+# go test and the linter, on Windows, macOS and Linux.
 on:
   push:
   pull_request:

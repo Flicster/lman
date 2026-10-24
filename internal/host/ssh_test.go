@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -21,16 +22,29 @@ func TestQuoteSurvivesTheShell(t *testing.T) {
 }
 
 func TestGlobQuoteExpandsOnlyGlobs(t *testing.T) {
-	dir := t.TempDir() + "/Application Support"
+	dir := posixPath(t, t.TempDir()) + "/Application Support"
 	require.NoError(t, exec.Command("mkdir", "-p", dir+"/v1/bin", dir+"/v2/bin").Run())
 	require.NoError(t, exec.Command("touch", dir+"/v1/bin/node", dir+"/v2/bin/node").Run())
 
 	script := "for f in " + globQuote(dir+"/*/bin/node") + `; do [ -e "$f" ] && printf '%s\n' "$f"; done`
-	out, err := exec.Command("sh", "-c", script).Output()
-	require.NoError(t, err)
+	out, err := exec.Command("sh", "-c", script).CombinedOutput()
+	require.NoError(t, err, string(out))
 
 	assert.Equal(t, dir+"/v1/bin/node\n"+dir+"/v2/bin/node\n", string(out))
 	assert.Equal(t, `/a\ b/\$x/*`, globQuote("/a b/$x/*"))
+}
+
+// posixPath is a path the POSIX shell can glob. A Windows temp path contains
+// backslashes; once the pattern has a *, the shell treats them as escapes and
+// the glob matches nothing.
+func posixPath(t *testing.T, path string) string {
+	t.Helper()
+	if runtime.GOOS != "windows" {
+		return path
+	}
+	out, err := exec.Command("sh", "-c", `cygpath -u "$1"`, "sh", path).Output()
+	require.NoError(t, err, string(out))
+	return strings.TrimSpace(string(out))
 }
 
 func TestGlobScriptSucceedsWhenTheLastPatternMisses(t *testing.T) {
