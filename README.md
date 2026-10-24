@@ -103,7 +103,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.0
 make app
 ```
 
-Every push and pull request runs the tests and the linter on Windows, macOS, and Linux. A push to `main` builds the desktop application. A tag `v1.2.3` publishes that version: a `.dmg` on macOS, an `.AppImage` and a `.tar.gz` on Linux, a `.zip` on Windows, each with a `.sha256`. The terminal command is installed with `go install`.
+Every push and pull request runs the tests and the linter on Windows, macOS, and Linux. A tag `v1.2.3` builds the desktop application and publishes that version: a `.dmg` on macOS, an `.AppImage` and a `.tar.gz` on Linux, a `.zip` on Windows, each with a `.sha256`. The same build can be started by hand; that run is not published. The terminal command is installed with `go install`.
 
 ## License
 
