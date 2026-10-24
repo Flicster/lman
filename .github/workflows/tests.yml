@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  go:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+          echo "CGO_ENABLED=1" >> "$GITHUB_ENV"
+          echo "GO_TAGS=webkit2_41" >> "$GITHUB_ENV"
+      - name: macOS link flags
+        if: runner.os == 'macOS'
+        run: echo "CGO_LDFLAGS=-framework UniformTypeIdentifiers" >> "$GITHUB_ENV"
+      - name: Test
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${GO_TAGS:-}" ]]; then
+            go test -race -tags "$GO_TAGS" ./internal/...
+          else
+            go test -race ./internal/...
+          fi
+      - name: staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@2026.1
+      - name: Lint
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${GO_TAGS:-}" ]]; then
+            go vet -tags "$GO_TAGS" ./...
+            staticcheck -tags "$GO_TAGS" ./...
+          else
+            go vet ./...
+            staticcheck ./...
+          fi

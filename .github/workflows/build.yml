@@ -1,0 +1,117 @@
+name: build
+
+# Desktop application for Windows, macOS and Linux.
+# A tag v1.2.3 publishes a release of that version.
+# The terminal command is not attached: install it with go install.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+          - os: macos-15-intel
+            goos: darwin
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+      - name: Version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            number="${GITHUB_REF_NAME#v}"
+            if [[ ! "$number" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.]+)?$ ]]; then
+              echo "release tag must be a version, for example v1.2.3" >&2
+              exit 1
+            fi
+          else
+            number="dev"
+          fi
+          # Windows and macOS bundle metadata need a dotted number.
+          bundle="${number%%[-+]*}"
+          if [[ "$bundle" == "dev" ]]; then
+            bundle="0.0.0"
+          fi
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+          sed -i.bak "s/\"productVersion\": \"0.0.0\"/\"productVersion\": \"${bundle}\"/" wails.json
+          rm -f wails.json.bak
+      - name: Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.0
+      - name: Build
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(build -clean -ldflags "-X main.version=${{ steps.version.outputs.number }}" -platform "${{ matrix.goos }}/${{ matrix.goarch }}")
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
+            args+=(-tags webkit2_41)
+          fi
+          wails "${args[@]}"
+      - name: Archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          ver="${{ steps.version.outputs.number }}"
+          name="lman-${ver}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          mkdir -p dist
+          case "${{ matrix.goos }}" in
+            darwin)
+              test -d build/bin/Lman.app
+              ditto -c -k --keepParent build/bin/Lman.app "dist/${name}.zip"
+              ;;
+            windows)
+              test -f build/bin/lman-desktop.exe
+              tar -a -cf "dist/${name}.zip" -C build/bin lman-desktop.exe
+              ;;
+            linux)
+              test -f build/bin/lman-desktop
+              tar -C build/bin -czf "dist/${name}.tar.gz" lman-desktop
+              ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lman-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          files: out/*
+          fail_on_unmatched_files: true
