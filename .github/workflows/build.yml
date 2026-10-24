@@ -3,7 +3,9 @@ name: build
 # Desktop application for Windows, macOS and Linux.
 # A tag v1.2.3 publishes a release of that version:
 # .dmg on macOS, .AppImage and .tar.gz on Linux, .zip on Windows.
-# Only the versioned names are published, for example lman-1.2.3-windows-amd64.zip.
+# Versioned names are the release files, for example lman-1.2.3-windows-amd64.zip.
+# The same files without the version are attached so README links
+# releases/latest/download/lman-windows-amd64.zip start a download.
 # The terminal command is not attached: install it with go install.
 on:
   push:
@@ -117,6 +119,21 @@ jobs:
         with:
           path: out
           merge-multiple: true
+      - name: Names without the version, for releases/latest/download
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd out
+          ver="${GITHUB_REF_NAME#v}"
+          for f in lman-*; do
+            dest="${f/lman-${ver}-/lman-}"
+            if [[ "$dest" == "$f" ]]; then
+              echo "unexpected release file: $f" >&2
+              exit 1
+            fi
+            cp -a "$f" "$dest"
+          done
+          ls -l
       - uses: softprops/action-gh-release@v3
         with:
           name: ${{ github.ref_name }}
