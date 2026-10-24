@@ -36,13 +36,13 @@ The desktop window runs on macOS, Windows, and Linux. Remote servers are Linux a
 `lman` is installed with Go. It is not in the release. You need [Go 1.26.5](https://go.dev/dl/) or newer.
 
 ```sh
-go install github.com/<owner>/lman/cmd/lman@latest
+go install github.com/Flicster/lman/cmd/lman@latest
 ```
 
 `@latest` installs the newest version. A release tag selects that version:
 
 ```sh
-go install github.com/<owner>/lman/cmd/lman@v1.2.3
+go install github.com/Flicster/lman/cmd/lman@v1.2.3
 ```
 
 `go install` requires the module path to be this repository, `github.com/<owner>/lman`.
