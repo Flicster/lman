@@ -18,12 +18,12 @@ Download the file for your system. These links always open the [latest release](
 
 | System | File | How to open |
 | --- | --- | --- |
-| macOS, Apple Silicon | [`lman-darwin-arm64.dmg`](../../releases/latest/download/lman-darwin-arm64.dmg) | Open it and drag Lman to Applications. The same application is also a [`.zip`](../../releases/latest/download/lman-darwin-arm64.zip). |
-| macOS, Intel | [`lman-darwin-amd64.dmg`](../../releases/latest/download/lman-darwin-amd64.dmg) | Open it and drag Lman to Applications. The same application is also a [`.zip`](../../releases/latest/download/lman-darwin-amd64.zip). |
+| macOS, Apple Silicon | [`lman-darwin-arm64.dmg`](../../releases/latest/download/lman-darwin-arm64.dmg), archive [`lman-darwin-arm64.zip`](../../releases/latest/download/lman-darwin-arm64.zip) | Open the disk image and drag Lman to Applications. The zip contains `Lman.app`. |
+| macOS, Intel | [`lman-darwin-amd64.dmg`](../../releases/latest/download/lman-darwin-amd64.dmg), archive [`lman-darwin-amd64.zip`](../../releases/latest/download/lman-darwin-amd64.zip) | Open the disk image and drag Lman to Applications. The zip contains `Lman.app`. |
 | Windows | [`lman-windows-amd64.zip`](../../releases/latest/download/lman-windows-amd64.zip) | Unzip and open `lman-desktop.exe`. |
-| Linux x86-64 | [`lman-linux-amd64.AppImage`](../../releases/latest/download/lman-linux-amd64.AppImage) | `chmod +x lman-linux-amd64.AppImage` and run it. The same program as a folder: [`lman-linux-amd64.tar.gz`](../../releases/latest/download/lman-linux-amd64.tar.gz), run `lman-desktop` inside. |
+| Linux x86-64 | [`lman-linux-amd64.AppImage`](../../releases/latest/download/lman-linux-amd64.AppImage), archive [`lman-linux-amd64.tar.gz`](../../releases/latest/download/lman-linux-amd64.tar.gz) | `chmod +x lman-linux-amd64.AppImage` and run it. In the archive, run `lman-desktop`. |
 
-Linux needs GTK 3 and WebKitGTK 4.1, including for the AppImage. On Ubuntu: `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`. The AppImage also needs FUSE 2: `sudo apt install libfuse2` (Ubuntu 24.04: `libfuse2t64`). Or use the `.tar.gz`. Windows uses the WebView2 runtime, which the application downloads on first launch if it is missing.
+Linux needs GTK 3 and WebKitGTK 4.1, including for the AppImage. On Ubuntu: `sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0`. The AppImage also needs FUSE 2: `sudo apt install libfuse2` (Ubuntu 24.04: `libfuse2t64`). Or use [`lman-linux-amd64.tar.gz`](../../releases/latest/download/lman-linux-amd64.tar.gz). Windows uses the WebView2 runtime, which the application downloads on first launch if it is missing.
 
 To check a file, compare its sha256 with the `.sha256` file beside it: `certutil -hashfile <file> SHA256` on Windows, `shasum -a 256 <file>` on macOS, `sha256sum <file>` on Linux.
 
