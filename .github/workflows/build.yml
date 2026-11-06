@@ -1,0 +1,162 @@
+name: build
+
+# Desktop application for Windows, macOS and Linux.
+# This workflow does not create tags or releases. Publishing a release on GitHub
+# creates the tag v1.2.3, and that tag is the only event that starts the build.
+# The built files are uploaded to the release that already exists for the tag:
+# .dmg on macOS, .AppImage and .tar.gz on Linux, .zip on Windows.
+# Versioned names are the release files, for example lman-1.2.3-windows-amd64.zip.
+# The same files without the version are attached so README links
+# releases/latest/download/lman-windows-amd64.zip start a download.
+# The terminal command is not attached: install it with go install.
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+jobs:
+  package:
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+          - os: macos-15-intel
+            goos: darwin
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+      - name: Version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            number="${GITHUB_REF_NAME#v}"
+            if [[ ! "$number" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.]+)?$ ]]; then
+              echo "release tag must be a version, for example v1.2.3" >&2
+              exit 1
+            fi
+          else
+            number="dev"
+          fi
+          # Windows and macOS bundle metadata need a dotted number.
+          bundle="${number%%[-+]*}"
+          if [[ "$bundle" == "dev" ]]; then
+            bundle="0.0.0"
+          fi
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+          sed -i.bak "s/\"productVersion\": \"0.1.0\"/\"productVersion\": \"${bundle}\"/" wails.json
+          rm -f wails.json.bak
+      - name: Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.0
+      - name: Build
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(build -clean -ldflags "-X main.version=${{ steps.version.outputs.number }}" -platform "${{ matrix.goos }}/${{ matrix.goarch }}")
+          if [[ "${{ matrix.goos }}" == "linux" ]]; then
+            args+=(-tags webkit2_41)
+          fi
+          wails "${args[@]}"
+      - name: Archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          ver="${{ steps.version.outputs.number }}"
+          name="lman-${ver}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          mkdir -p dist
+          case "${{ matrix.goos }}" in
+            darwin)
+              test -d build/bin/Lman.app
+              ditto -c -k --keepParent build/bin/Lman.app "dist/${name}.zip"
+              stage="$(mktemp -d)"
+              ditto build/bin/Lman.app "${stage}/Lman.app"
+              ln -s /Applications "${stage}/Applications"
+              hdiutil create -volname Lman -srcfolder "${stage}" -ov -format UDZO "dist/${name}.dmg"
+              rm -rf "${stage}"
+              ;;
+            windows)
+              test -f build/bin/lman-desktop.exe
+              tar -a -cf "dist/${name}.zip" -C build/bin lman-desktop.exe
+              ;;
+            linux)
+              test -f build/bin/lman-desktop
+              tar -C build/bin -czf "dist/${name}.tar.gz" lman-desktop
+              sh build/linux/appimage.sh build/bin/lman-desktop build/appicon.png "dist/${name}.AppImage"
+              ;;
+          esac
+      - uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: dist/*
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: lman-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          path: out
+          merge-multiple: true
+      - name: Names without the version, for releases/latest/download
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd out
+          ver="${GITHUB_REF_NAME#v}"
+          for f in lman-*; do
+            dest="${f/lman-${ver}-/lman-}"
+            if [[ "$dest" == "$f" ]]; then
+              echo "unexpected release file: $f" >&2
+              exit 1
+            fi
+            cp -a "$f" "$dest"
+          done
+          ls -l
+          sha256sum -- * > SHA256SUMS.tmp
+          mv SHA256SUMS.tmp SHA256SUMS
+      - name: Upload to the existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # This job has no checkout, so gh cannot discover the repository from .git.
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cd out
+          # gh release upload refuses a missing release, so this cannot create one or a tag.
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null; then
+            echo "there is no release for $GITHUB_REF_NAME; this workflow does not create releases or tags" >&2
+            exit 1
+          fi
+          gh release upload "$GITHUB_REF_NAME" --clobber -- *

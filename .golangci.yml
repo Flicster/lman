@@ -1,0 +1,135 @@
+run:
+  go: "1.26"
+  timeout: 30m
+  issues-exit-code: 1
+  tests: true
+
+output:
+  formats:
+    - format: line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+  funlen:
+    lines: 60
+    statements: 40
+  govet:
+    settings:
+      printf: # analyzer name, run `go tool vet help` to see all analyzers
+        funcs: # run `go tool vet help printf` to see available settings for `printf` analyzer
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+  gofmt:
+    simplify: true
+  gocyclo:
+    min-complexity: 30
+  gocognit:
+    min-complexity: 40
+  dupl:
+    threshold: 500
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  misspell:
+    locale: US
+    ignore-words:
+      - GitLab
+  lll:
+    line-length: 120
+    tab-width: 1
+  unparam:
+    check-exported: false
+  nakedret:
+    max-func-lines: 30
+  prealloc:
+    simple: true
+    range-loops: true # Report preallocation suggestions on range loops, true by default
+    for-loops: false # Report preallocation suggestions on for loops, false by default
+  gocritic:
+    settings: # settings passed to gocritic
+      captLocal: # must be valid enabled check name
+        paramsOnly: true
+  godox:
+    keywords: # default keywords are TODO, BUG, and FIXME, these can be overwritten by this setting
+      - BUG
+      - FIXME
+      - NOTE
+      - OPTIMIZE # marks code that should be optimized before merging
+      - HACK # marks hack-arounds that should be removed before merging
+  dogsled:
+    max-blank-identifiers: 2
+
+  whitespace:
+    multi-if: false   # Enforces newlines (or comments) after every multi-line if statement
+    multi-func: false # Enforces newlines (or comments) after every multi-line function signature
+  wsl:
+    strict-append: true
+    allow-assign-and-call: true
+    allow-multiline-assign: true
+    allow-cuddle-declarations: false
+    allow-trailing-comment: false
+    force-case-trailing-whitespace: 0
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - dogsled
+    - dupl
+    - errcheck
+    - gocognit
+    - goconst
+    - gocritic
+    - godox
+    - gofmt
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+    # don't enable:
+    # - depguard
+    # - deadcode
+    # - gochecknoglobals
+    # - gochecknoinits
+    # - gocyclo
+    # - lll
+    # - maligned
+    # - prealloc
+    # - varcheck
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+
+    - linters:
+        - lll
+      source: "^//go:generate "
+    - linters:
+        - gosec
+      text: G104
+  exclude-use-default: false
+  exclude-dirs-use-default: true
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  exclude-dirs:
+    - environments

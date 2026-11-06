@@ -1,0 +1,9 @@
+/bin/
+/build/bin/
+.idea
+.vscode/
+/vendor/
+/coverage/
+/security/
+.env
+.DS_Store

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Lman",
+  "outputfilename": "lman-desktop",
+  "assetdir": "frontend/dist",
+  "frontend:dir": "frontend",
+  "frontend:install": "",
+  "frontend:build": "",
+  "wailsjsdir": "",
+  "author": {
+    "name": "Lman"
+  },
+  "info": {
+    "productName": "Lman",
+    "productVersion": "0.1.0",
+    "copyright": "Copyright (c) 2026 the copyright holder of Lman. PolyForm Noncommercial 1.0.0",
+    "comments": "Programming languages on your computer"
+  }
+}
