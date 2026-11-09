@@ -321,9 +321,9 @@ func (s *Service) planLines(l domain.Language, v domain.Version, snap *snapshot)
 		if errors.As(err, &manual) && manual.Hint != "" {
 			return []string{label + ": not removed by lman, run yourself: " + manual.Hint}
 		}
-		return []string{label + ": not removed by lman"}
+		return []string{"Cannot be removed by lman"}
 	case plan.Dir != "":
-		return []string{label + ": delete directory " + plan.Dir}
+		return []string{"Will delete directory: " + plan.Dir}
 	}
 	return []string{label + ": run " + strings.Join(plan.Command, " ")}
 }
