@@ -328,6 +328,23 @@ func (s *ServiceSuite) TestRemoveLanguageSkipsAVersionFoundAfterThePlan() {
 	s.NotContains(s.host.removed, home+"/sdk/go1.23.0")
 }
 
+func (s *ServiceSuite) TestPlanWordsSingleVersionWithoutLabel() {
+	lines, err := s.svc.Plan(s.ctx, "go", "1.24.0")
+	s.Require().NoError(err)
+
+	s.Equal([]string{"Delete directory " + home + "/sdk/go1.24.0"}, lines)
+}
+
+func (s *ServiceSuite) TestPlanLabelsEachVersionForWholeLanguage() {
+	lines, err := s.svc.Plan(s.ctx, "go", "")
+	s.Require().NoError(err)
+
+	s.Contains(lines, "go1.24.0: Delete directory "+home+"/sdk/go1.24.0")
+	for _, line := range lines {
+		s.False(strings.HasPrefix(line, "Delete directory "), "unlabeled line: %s", line)
+	}
+}
+
 func (s *ServiceSuite) TestManualUsesActiveVersion() {
 	s.host.output("/usr/local/go/bin/go help", "Go is a tool for managing Go source code.")
 

@@ -126,8 +126,8 @@ func TestRemovePrintsThePlanBeforeAsking(t *testing.T) {
 	require.Equal(t, exitOK, r.run("remove", "go", "1.24"))
 
 	out := r.out.String()
-	assert.Contains(t, out, "This will:\n  - Go go1.24.0: delete /home/u/sdk/go1.24.0\n")
-	assert.Less(t, strings.Index(out, "This will:"), strings.Index(out, "[y/N]"), "the plan is shown before the question")
+	assert.Contains(t, out, "Plan:\n  - Delete directory /home/u/sdk/go1.24.0\n")
+	assert.Less(t, strings.Index(out, "Plan:"), strings.Index(out, "[y/N]"), "the plan is shown before the question")
 }
 
 func TestRemoveActiveVersionFailsWithoutQuestion(t *testing.T) {
@@ -296,7 +296,7 @@ func (m *stubManager) Use(_ context.Context, _, version string) (app.Activation,
 
 func (m *stubManager) Plan(_ context.Context, _, version string) ([]string, error) {
 	if version == "" {
-		return []string{"Go go1.25.1: run brew uninstall go", "Go go1.24.0: delete /home/u/sdk/go1.24.0"}, nil
+		return []string{"go1.25.1: Run brew uninstall go", "go1.24.0: Delete directory /home/u/sdk/go1.24.0"}, nil
 	}
 	v, err := m.lang.Find(version)
 	if err != nil {
@@ -305,7 +305,7 @@ func (m *stubManager) Plan(_ context.Context, _, version string) ([]string, erro
 	if v.Active {
 		return nil, domain.ErrActiveVersion
 	}
-	return []string{"Go go1.24.0: delete /home/u/sdk/go1.24.0"}, nil
+	return []string{"Delete directory /home/u/sdk/go1.24.0"}, nil
 }
 
 func (m *stubManager) RemoveVersion(_ context.Context, _, version string) error {

@@ -194,7 +194,7 @@ func (m stubManager) Use(context.Context, string, string) (app.Activation, error
 }
 
 func (m stubManager) Plan(context.Context, string, string) ([]string, error) {
-	return []string{"Go go1.25.1: run brew uninstall go"}, nil
+	return []string{"go1.25.1: Run brew uninstall go"}, nil
 }
 
 func (m stubManager) RemoveVersion(context.Context, string, string) error { return nil }

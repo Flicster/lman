@@ -277,14 +277,17 @@ func (s *Service) Plan(ctx context.Context, id, version string) ([]string, error
 		var lines []string
 		var plans []domain.Removal
 		for _, v := range l.Versions {
-			lines = append(lines, s.planLines(l, v, snap)...)
+			label := l.Label(v.Number)
+			for _, line := range s.planLines(v, snap) {
+				lines = append(lines, label+": "+line)
+			}
 			if plan, ok := executableRemoval(v, s.host.Platform(), snap.home); ok {
 				plans = append(plans, plan)
 			}
 		}
 		for _, name := range tools(l.Definition) {
 			if target, ok := snap.links[name]; ok {
-				lines = append(lines, fmt.Sprintf("unlink %s (-> %s)", s.env.ShimDir()+"/"+name, target))
+				lines = append(lines, fmt.Sprintf("Unlink %s → %s", s.env.ShimDir()+"/"+name, target))
 			}
 		}
 		s.storePlan(id, "", plans)
@@ -297,14 +300,14 @@ func (s *Service) Plan(ctx context.Context, id, version string) ([]string, error
 	if v.Active {
 		return nil, fmt.Errorf("%w: make another %s version active first, or remove the language", domain.ErrActiveVersion, l.Name)
 	}
-	lines := s.planLines(l, v, snap)
+	lines := s.planLines(v, snap)
 	var plans []domain.Removal
 	if plan, ok := executableRemoval(v, s.host.Platform(), snap.home); ok {
 		plans = append(plans, plan)
 	}
 	for name, target := range snap.links {
 		if path.Dir(target) == v.BinDir() {
-			lines = append(lines, fmt.Sprintf("unlink %s (-> %s)", s.env.ShimDir()+"/"+name, target))
+			lines = append(lines, fmt.Sprintf("Unlink %s → %s", s.env.ShimDir()+"/"+name, target))
 		}
 	}
 	slices.Sort(lines)
@@ -312,20 +315,19 @@ func (s *Service) Plan(ctx context.Context, id, version string) ([]string, error
 	return lines, nil
 }
 
-func (s *Service) planLines(l domain.Language, v domain.Version, snap *snapshot) []string {
-	label := l.Name + " " + l.Label(v.Number)
+func (s *Service) planLines(v domain.Version, snap *snapshot) []string {
 	plan, err := domain.PlanRemoval(v, s.host.Platform(), snap.home)
 	switch {
 	case err != nil:
 		var manual *domain.ManualRemovalError
 		if errors.As(err, &manual) && manual.Hint != "" {
-			return []string{label + ": not removed by lman, run yourself: " + manual.Hint}
+			return []string{"Not removed by lman, run yourself: " + manual.Hint}
 		}
-		return []string{"Cannot be removed by lman"}
+		return []string{"Not removed by lman"}
 	case plan.Dir != "":
-		return []string{"Will delete directory: " + plan.Dir}
+		return []string{"Delete directory: " + plan.Dir}
 	}
-	return []string{label + ": run " + strings.Join(plan.Command, " ")}
+	return []string{"Run: " + strings.Join(plan.Command, " ")}
 }
 
 // RemoveVersion deletes one installed version. The active version stays: switch first.

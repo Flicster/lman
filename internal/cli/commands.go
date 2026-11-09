@@ -244,7 +244,7 @@ func (c *CLI) remove(ctx context.Context, m Manager, args []string) error {
 // but nothing is asked.
 func (c *CLI) confirmPlan(question string, plan []string, yes bool) (bool, error) {
 	var p writes
-	p.fprintln(c.out, "This will:")
+	p.fprintln(c.out, "Plan:")
 	for _, line := range plan {
 		p.fprintf(c.out, "  - %s\n", line)
 	}
