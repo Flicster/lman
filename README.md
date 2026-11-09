@@ -135,11 +135,11 @@ A pull request, and a commit on main, runs the tests and the linter on Windows, 
 
 The source is public under the [PolyForm Noncommercial License 1.0.0](LICENSE.md) (`PolyForm-Noncommercial-1.0.0`).
 
-You may use, study, change, and share Lman free of charge for a noncommercial purpose. That includes personal use, study, experiments, and hobby projects, and use by schools, charities, public research organizations, and government institutions.
+You may use, change, and share Lman free of charge for a noncommercial purpose. Personal use for research, experiment, testing for the benefit of public knowledge, personal study, private entertainment, hobby projects, amateur pursuits, or religious observance is permitted when there is no anticipated commercial application. A charity, educational institution, public research organization, public safety or health organization, environmental protection organization, or government institution may use Lman regardless of how it is funded. Anyone you share Lman with must also get these terms, or the URL for them, and the Required Notice below.
 
-Any commercial purpose needs a separate license that you buy from the copyright holder. That includes use in a business and shipping Lman as part of something you sell. To buy a commercial license, contact the copyright holder through the contact on their GitHub profile, or open an issue in this repository.
+A commercial purpose needs a separate license that you buy from the copyright holder. That includes use in a business, including internal use, and shipping Lman as part of something you sell. To buy a commercial license, contact the copyright holder through the contact on their GitHub profile, or open an issue in this repository.
 
-This is a source-available license. It is not an Open Source license under the [Open Source Definition](https://opensource.org/osd), because that definition does not allow a separate fee for commercial use. The summary in this section is not the license. The license is [LICENSE.md](LICENSE.md).
+This is a source-available license. It is not an Open Source license under the [Open Source Definition](https://opensource.org/osd), because that definition does not allow a license to restrict use to noncommercial purposes. The summary in this section is not the license. The license is [LICENSE.md](LICENSE.md).
 
 Required Notice: Copyright (c) 2026 the copyright holder of Lman. Commercial use requires a separate license purchased from the copyright holder.
 
